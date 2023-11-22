@@ -3,12 +3,8 @@ import { hit , Ship} from "./sandbox";
 
 test('creazione Ship' , () => {
     expect(Ship(5)).toEqual({
-      /*hit () {
-        this.receivedHit += 1;
-      },
-      isSunk () {
-        return (this.length === this.receivedHit) ? true : false;
-      },*/
+      hit : expect.any(Function) ,
+      isSunk : expect.any(Function),
       length: 5,
       receivedHit : 0,
       isSunked : false,
@@ -16,6 +12,7 @@ test('creazione Ship' , () => {
     });
 });
 
+//jest.spyOn(Ship, 'hit').mockReturnValue('1');
 /*test('hitting the Ship' , () => {
     expect(hit()).toBe(1);
 });*/

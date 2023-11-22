@@ -4,7 +4,7 @@ export const Ship = (lunghezza) => {
          length : lunghezza,
          receivedHit : 0,
          isSunked : false,
-         /*hit () {
+         hit () {
               return this.receivedHit += 1;
          },
          isSunk () {
@@ -13,7 +13,7 @@ export const Ship = (lunghezza) => {
              }else {
                  return this.isSunked = false;
              }
-         },*/
+         },
      };
  
  };
