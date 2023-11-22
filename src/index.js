@@ -74,7 +74,26 @@ const Gameboard = () => {
         }
     }
 
-    
+    function areAllShipsSunk() {
+        return pezziDiNavi === 0;
+    }
+
+    function receiveAttack (riga, colonna) {
+        if(griglia[riga][colonna].status === 'ship') {
+            griglia[riga][colonna].status = 'hit';
+            Ship.hit();
+            pezziDiNavi--;
+            if (Ship.isSunk()) {
+                // La nave è completamente affondata
+                if (areAllShipsSunk()) {
+                  // Tutte le navi sono state distrutte,  gestire la vittoria
+                  console.log('Hai distrutto tutte le navi!');
+                }
+            }
+        } else if (griglia[riga][colonna].status === 'empty') {
+            griglia[riga][colonna].status = 'miss';
+        }
+    }
 
     for (let i = 0; i < dimensioneGriglia; i++) {
         griglia[i] = [];
