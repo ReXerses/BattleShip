@@ -23,6 +23,58 @@ const Gameboard = () => {
     let pezziDiNavi = 0;
     // creazione della griglia di gioco
 
+    function posizionamentoGrigliaValido (ship, riga, colonna,  orientation) {
+        if (orientation === 'orizzontale') {
+            if ((riga + ship.length > 9) || (riga - ship.length < 0)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if ((colonna + ship.length > 9) || (colonna - ship.length < 0)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    function sovrapposizioneNaviValido (ship, riga, colonna,  orientation) {
+        if (orientation === 'orizzontale') {
+            for(let i = colonna; i < ship.length; i++) {
+                if(griglia[riga][i].status != 'empty') {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            for(let i = riga; i < ship.length; i++) {
+                if(griglia[i][colonna].status != 'empty') {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    function placeShip (ship, riga, colonna,  orientation) {
+        if (posizionamentoGrigliaValido(ship, riga, colonna,  orientation) && sovrapposizioneNaviValido(ship, riga, colonna,  orientation)) {
+
+            for (let i = 0; i < ship.length; i++) {
+                if (orientation === 'orizzontale') {
+                  griglia[riga][col + i].status = 'ship';
+                  griglia[riga][col + i].shipPart = ship;
+                  pezziDiNavi++;
+                } else {
+                  griglia[riga + i][col].status = 'ship';
+                  griglia[riga + i][col].shipPart = ship;
+                  pezziDiNavi++;
+                }
+            }
+        }
+    }
+
+    
 
     for (let i = 0; i < dimensioneGriglia; i++) {
         griglia[i] = [];
