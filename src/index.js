@@ -5,7 +5,7 @@ const Ship = (lunghezza) => {
         receivedHit : 0,
         isSunked : false,
         hit () {
-             return this.receivedHit += 1;
+            return this.receivedHit += 1;
         },
         isSunk () {
             if((this.length === this.receivedHit)) {
@@ -17,97 +17,109 @@ const Ship = (lunghezza) => {
     };
 };
 
-const Gameboard = () => {
-    const dimensioneGriglia = 10;
-    const griglia = [];
-    let pezziDiNavi = 0;
-    // creazione della griglia di gioco
-
-    function posizionamentoGrigliaValido (ship, riga, colonna,  orientation) {
-        if (orientation === 'orizzontale') {
-            if ((riga + ship.length > 9) || (riga - ship.length < 0)) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            if ((colonna + ship.length > 9) || (colonna - ship.length < 0)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-    }
-
-    function sovrapposizioneNaviValido (ship, riga, colonna,  orientation) {
-        if (orientation === 'orizzontale') {
-            for(let i = colonna; i < ship.length; i++) {
-                if(griglia[riga][i].status != 'empty') {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            for(let i = riga; i < ship.length; i++) {
-                if(griglia[i][colonna].status != 'empty') {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    function placeShip (ship, riga, colonna,  orientation) {
-        if (posizionamentoGrigliaValido(ship, riga, colonna,  orientation) && sovrapposizioneNaviValido(ship, riga, colonna,  orientation)) {
-
-            for (let i = 0; i < ship.length; i++) {
-                if (orientation === 'orizzontale') {
-                  griglia[riga][col + i].status = 'ship';
-                  griglia[riga][col + i].shipPart = ship;
-                  pezziDiNavi++;
-                } else {
-                  griglia[riga + i][col].status = 'ship';
-                  griglia[riga + i][col].shipPart = ship;
-                  pezziDiNavi++;
-                }
-            }
-        }
-    }
-
-    function areAllShipsSunk() {
-        return pezziDiNavi === 0;
-    }
-
-    function receiveAttack (riga, colonna) {
-        if(griglia[riga][colonna].status === 'ship') {
-            griglia[riga][colonna].status = 'hit';
-            Ship.hit();
-            pezziDiNavi--;
-            if (Ship.isSunk()) {
-                // La nave è completamente affondata
-                if (areAllShipsSunk()) {
-                  // Tutte le navi sono state distrutte,  gestire la vittoria
-                  console.log('Hai distrutto tutte le navi!');
-                }
-            }
-        } else if (griglia[riga][colonna].status === 'empty') {
-            griglia[riga][colonna].status = 'miss';
-        }
-    }
-
+function inizializzaGriglia (griglia=[], dimensioneGriglia=10) {
     for (let i = 0; i < dimensioneGriglia; i++) {
         griglia[i] = [];
         for (let j = 0; j < dimensioneGriglia; j++) {
-          griglia[i][j] = {
-            status: 'empty', // Stato iniziale della casella (empty, ship, hit, miss, etc.)
-            shipPart: null // Parte della nave presente nella casella (null se la casella è vuota o contiene una nave non colpita)
-          };
+            griglia[i][j] = {
+                status: 'empty', // Stato iniziale della casella (empty, ship, hit, miss, etc.)
+                hipPart: null // Parte della nave presente nella casella (null se la casella è vuota o contiene una nave non colpita)
+            };
         }
     }
+    return griglia;
+}
+
+const Gameboard =  () => {
 
     return {
-        placeShip,
-        receiveAttack
-    };
+        dimensioneGriglia : 10,
+        griglia :  inizializzaGriglia() , // si puo espandere la griglia se necessario
+        pezziDiNavi : 0,
+        // creazione della griglia di gioco
 
-}
+        posizionamentoGrigliaValido (ship, riga, colonna,  orientation) {
+            
+            if (orientation === 'orizzontale') {
+                if ((colonna + ship.length > 9) || ( ship.length - colonna < 0)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                if ((riga + ship.length > 9) || (ship.length - riga < 0)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+
+        sovrapposizioneNaviValido (ship, riga, colonna,  orientation) {
+            if (orientation === 'orizzontale') {
+                for(let i = colonna; i < ship.length; i++) {
+                    if(this.griglia[riga][i].status != 'empty') {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                for(let i = riga; i < ship.length; i++) {
+                    if(this.griglia[i][colonna].status != 'empty') {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+
+        placeShip (ship, riga, colonna,  orientation) {
+            if (this.posizionamentoGrigliaValido(ship, riga, colonna,  orientation) && this.sovrapposizioneNaviValido(ship, riga, colonna,  orientation)) {
+                for (let i = 0; i < ship.length; i++) {
+                    if (orientation === 'orizzontale') {
+                        this.griglia[riga][colonna + i].status = 'ship';
+                        this.griglia[riga][colonna + i].shipPart = ship;
+                        this.pezziDiNavi++;
+                    } else {
+                        this.griglia[riga + i][colonna].status = 'ship';
+                        this.griglia[riga + i][colonna].shipPart = ship;
+                        this.pezziDiNavi++;
+                    }
+                }
+            } else {
+                return ('Posizionamento non valido');
+            }
+        },
+
+        areAllShipsSunk() {
+            return this.pezziDiNavi === 0;
+        },
+
+        receiveAttack (riga, colonna) {
+            if(this.griglia[riga][colonna].status === 'ship') {
+                this.griglia[riga][colonna].status = 'hit';
+                this.griglia[riga][colonna].hit();
+                this.pezziDiNavi--;
+                if (this.griglia[riga][colonna].isSunk()) {
+                    // La nave è completamente affondata
+                    if (this.areAllShipsSunk()) {
+                    // Tutte le navi sono state distrutte,  gestire la vittoria
+                        console.log('Hai distrutto tutte le navi!');
+                    }
+                }
+            } else if (this.griglia[riga][colonna].status === 'empty') {
+                this.griglia[riga][colonna].status = 'miss';
+            }
+        },
+    };
+};
+
+const Player = (idGiocatore) => {
+
+    return {
+        giocatoreN : idGiocatore,
+        tabella : Gameboard (),
+        naviDisponibili : [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)],
+    };
+};
+
