@@ -1,4 +1,4 @@
-import { inizializzaGriglia , Ship , Gameboard} from "./sandbox";
+import { inizializzaGriglia , Ship , Gameboard, Player} from "./sandbox";
 
 
 test('creazione Ship' , () => {
@@ -535,4 +535,13 @@ test('test affonda una nave' , () => {
     tabella.receiveAttack(3,3);
     tabella.receiveAttack(3,4);
     expect(tabella.areAllShipsSunk()).toBe(true);
+  });
+
+  test('crea un oggetto player ed attacca una nave' , () => {
+    const peschereccio = Ship(2)
+    const giocatore = Player();
+    //giocatore.autoPosizionamentoNavi();
+    giocatore.tabella.placeShip (peschereccio, 0, 0,  'orizzontale');
+    giocatore.tabella.receiveAttack(0,0);
+    expect(giocatore.tabella.griglia[0][0].status).toBe('hit');
   });

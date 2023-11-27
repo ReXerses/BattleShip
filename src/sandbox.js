@@ -112,4 +112,68 @@ export const Gameboard =  () => {
             }
         },
     };
-};   
+};
+
+
+export const Player = (idGiocatore) => {
+
+    return {
+        id : idGiocatore,
+        tabella : Gameboard (),
+        naviDisponibili : [Ship(1), Ship(1), Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)],
+
+        autoPosizionamentoNavi() {
+            if (this.naviDisponibili.length === 0) {
+                return;
+            } else {
+                let nave = this.naviDisponibili.pop(); // Ottieni l'ultima nave senza rimuoverla dall'array
+                let controllo = true;
+        
+                while (controllo) {
+                    let riga = Math.floor(Math.random() * 10);
+                    let colonna = Math.floor(Math.random() * 10);
+                    let opzioni = ['orizzontale', 'verticale'];
+                    let direzione = opzioni[Math.floor(Math.random() * opzioni.length)];
+        
+                    if (this.tabella.placeShip(nave, riga, colonna, direzione)) {
+                        console.log('Nave posizionata con successo');
+                        controllo = false;
+                    }
+                }
+        
+                // Chiamata ricorsiva con l'array senza l'ultima nave
+                this.autoPosizionamentoNavi(this.naviDisponibili);
+            }
+        }
+    };
+};
+
+
+function stampaTabella(tabella) {
+    for (let riga = 0; riga < tabella.length; riga++) {
+        let rigaStampata = '';
+
+        for (let colonna = 0; colonna < tabella[riga].length; colonna++) {
+            const cella = tabella[riga][colonna];
+            let simbolo = '';
+
+            switch (cella.status) {
+                case 'ship':
+                    simbolo = 'x';
+                    break;
+                case 'empty':
+                    simbolo = '-';
+                    break;
+                case 'miss':
+                    simbolo = 'o';
+                    break;
+                default:
+                    simbolo = '?';
+            }
+
+            rigaStampata += simbolo + ' ';
+        }
+
+        console.log(rigaStampata.trim()); // Stampa la riga senza spazio finale
+    }
+}
