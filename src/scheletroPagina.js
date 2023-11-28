@@ -103,15 +103,49 @@ const scheletroPagina = (() => {
     .invalid {
         background-color : yellow;
     }
+    .info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .modale {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform : translate(-50%, -50%);
+        height: 200px;
+        width: 200px;
+        padding: 1rem;
+        background: red;
+        z-index: 1001;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
 
     </style>
 
     <div class='titolo'>Battle Ship</div>
-
+    <div id="modalOverlay"></div>
     <div class="mainContainer">
         <div class='parteSinistra'>
             <div class='tabella' id='human'></div>
-            <button id='rotate'>Ruota la nave</button>        
+            <div class='info'>
+                <span id='dimensioniNave'>La nave è lunga 5.</span>
+                <button id='rotate'>Ruota la nave</button>
+            </div>        
         </div>
         <div class='parteDestra'>
             <div class='tabella' id='bot'></div>    

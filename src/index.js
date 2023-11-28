@@ -7,8 +7,8 @@ const tavoloBot = document.getElementById('bot');
 const CLASSE_VALIDA = 'valid';
 const CLASSE_INVALIDA = 'invalid';
 const MAX_COLONNE = 10;
-const giocatore1 = Player(1);
-const bot = Player(2);
+const infoCollocamento = document.querySelector('.info');
+
 
 let turnoUmano = true;
 let statoRuotaNave = 'orizzontale';
@@ -38,6 +38,7 @@ function makeGridDOM(giocatore) {
                 col.dataset.row=i;
                 col.dataset.col=j;
                 col.classList.add('casellaGiocatore');
+                
                 if (giocatore.tabella.griglia[i][j].status === 'ship') {
                     col.classList.add('ship');
                 } else {
@@ -220,7 +221,8 @@ const Player = (idGiocatore) => {
 };
 
 
-
+let giocatore1 = Player(1);
+let bot = Player(2);
 
 bot.autoPosizionamentoNavi();
 makeGridDOM(bot);
@@ -234,6 +236,7 @@ ruotaBtn.addEventListener('click',  () => {
         statoRuotaNave = 'orizzontale';
     }
 });
+
 makeGridDOM(giocatore1);
 
 function aggiornaGriglia (giocatore) {
@@ -250,10 +253,10 @@ function aggiornaGriglia (giocatore) {
 let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
 let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
 caselleGriglia.forEach( casella => {
-    casella.addEventListener('click', event =>  aggiungiEventoCasella(event, casella));
+    casella.addEventListener('click', event =>  aggiungiEventoCasellaInserisciNave(event, casella));
 });
 
-function aggiungiEventoCasella (event, casella) {
+function aggiungiEventoCasellaInserisciNave (event, casella) {
     if(giocatore1.naviDisponibili.length != 0) {
         let riga = parseInt(casella.getAttribute('data-row'));
         let colonna = parseInt(casella.getAttribute('data-col'));
@@ -270,6 +273,7 @@ function aggiungiEventoCasella (event, casella) {
         rimuoviEventoDaTutteLeCaselle();
         tavoloUmano.innerHTML = '';
         makeGridDOM(giocatore1);
+        infoCollocamento.style.display = 'none';
         tavoloBot.addEventListener('click', gestisciClicElementoTavolo);
         tavoloUmano.addEventListener('click', gestisciClicElementoTavolo);
     }
@@ -277,12 +281,13 @@ function aggiungiEventoCasella (event, casella) {
 
 function rimuoviEventoDaTutteLeCaselle() {
     caselleGriglia.forEach(casella => {
-        casella.removeEventListener('click', aggiungiEventoCasella);
+        casella.removeEventListener('click', aggiungiEventoCasellaInserisciNave);
     });
 }
 
 
 function rimuoviClassi() {
+    let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
     caselleGriglia.forEach(c => {
         c.classList.remove(CLASSE_VALIDA, CLASSE_INVALIDA);
     });
@@ -331,7 +336,8 @@ caselleGrigliaBot.forEach(casella => {
             aggiornaTabella(casella,riga,colonna, bot);
             turnoUmano= false;
             if(bot.tabella.areAllShipsSunk()) {
-                alert('Human wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
+                gestisciVittoria('HUMAN');
+                //alert('Human wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
             } else {
                 gestisciClicElementoTavolo();
             }
@@ -343,22 +349,10 @@ caselleGrigliaBot.forEach(casella => {
 
 function gestisciClicElementoTavolo() {
     if (turnoUmano) {
-        tavoloUmano.style.pointerEvents = 'none';
         tavoloBot.style.pointerEvents = 'auto';
-        //turnoUmano= false;
-        //turnoUmano= false;
-        // Turno dispari: Gioca l'umano
-        console.log('Turno dell umano');
-        //tavoloBot.style.pointerEvents = "auto";
-        //tavoloUmano.style.pointerEvents = "none";
-        // Aggiungi qui la logica per il turno dell'umano
-        
-        //turnoUmano= false;
     } else {
-        // Turno pari: Gioca il bot
-        console.log('Turno del bot');
+
         tavoloBot.style.pointerEvents = 'none';
-        //tavoloUmano.style.pointerEvents = "auto";
         let controllo = true;
         while(controllo) {
             let riga = Math.floor(Math.random() * 10);
@@ -371,16 +365,108 @@ function gestisciClicElementoTavolo() {
             }
         }
         if(giocatore1.tabella.areAllShipsSunk()) {
-            alert('Bot wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
+            gestisciVittoria('BOT');
         } else {
             turnoUmano = true;
             gestisciClicElementoTavolo();
         }
-        //turnoUmano = true;
-        //gestisciClicElementoTavolo();
+
     }
 }
 
+function gestisciVittoria (stringaVincitore) {
+    const overlay = document.getElementById('modalOverlay');
+    const mainContainer = document.querySelector('.mainContainer');
+    const finestraVittoria = document.createElement('div');
+    finestraVittoria.classList.add('modale');
+    
+    const nomeVincitore = document.createElement('span');
+    nomeVincitore.textContent = `${stringaVincitore} WINS!`;
+    finestraVittoria.appendChild(nomeVincitore);
 
+    const ricominciaBtn = document.createElement('button');
+    ricominciaBtn.textContent = 'Restart';
+    finestraVittoria.appendChild(ricominciaBtn);
+    mainContainer.appendChild(finestraVittoria);
+    overlay.classList.add('modal-overlay');
+
+    ricominciaBtn.addEventListener('click' , () => {
+        tavoloUmano.style.pointerEvents = 'auto';
+        overlay.classList.remove('modal-overlay');
+        finestraVittoria.style.display = 'none';
+        giocatore1 = Player(1);
+        bot = Player(2);
+        bot.autoPosizionamentoNavi();
+        tavoloBot.innerHTML= '';
+        tavoloUmano.innerHTML= '';
+        makeGridDOM(bot);
+        tavoloBot.style.pointerEvents = 'none'; //disattivo il tavolo del bot
+        infoCollocamento.style.display = 'flex';
+        //gestire il restart del game
+        makeGridDOM(giocatore1);
+        let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
+        let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
+
+        caselleGriglia.forEach( casella => {
+            casella.addEventListener('click', event =>  aggiungiEventoCasellaInserisciNave(event, casella));
+        });
+
+        caselleGriglia.forEach(casella => {
+            casella.addEventListener('mouseover', () => {
+                rimuoviClassi();
+                let nave = giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1];
+                let riga = parseInt(casella.getAttribute('data-row'));
+                let colonna = parseInt(casella.getAttribute('data-col'));
+        
+                let tutteValide = true;
+        
+                for (let i = 0; i < nave.length; i++) {
+                    let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
+                    let row = statoRuotaNave === 'verticale' ? riga + i : riga;
+                    let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        
+                    if (!quadrato || quadrato.classList.contains('ship') || (statoRuotaNave === 'verticale' && row >= MAX_COLONNE) || (statoRuotaNave === 'orizzontale' && col >= MAX_COLONNE)) {
+                        tutteValide = false;
+                    }
+                }
+        
+                let classeAggiunta = tutteValide ? CLASSE_VALIDA : CLASSE_INVALIDA;
+        
+                for (let i = 0; i < nave.length; i++) {
+                    let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
+                    let row = statoRuotaNave === 'verticale' ? riga + i : riga;
+        
+                    let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    quadrato.classList.add(classeAggiunta);
+                }
+            });
+        });
+        // bot table
+        caselleGrigliaBot.forEach(casella => {
+            casella.addEventListener('click', () => {
+                let riga = parseInt(casella.getAttribute('data-row'));
+                let colonna = parseInt(casella.getAttribute('data-col'));
+                
+                if(bot.tabella.griglia[riga][colonna].status != 'miss' && bot.tabella.griglia[riga][colonna].status != 'hit') {
+                    bot.tabella.receiveAttack(riga, colonna);
+                    aggiornaTabella(casella,riga,colonna, bot);
+                    turnoUmano= false;
+                    if(bot.tabella.areAllShipsSunk()) {
+                        gestisciVittoria('HUMAN');
+                        //alert('Human wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
+                    } else {
+                        gestisciClicElementoTavolo();
+                    }
+                }
+            });
+        });
+    });
+
+    /*finestraVittoria.appendChild(ricominciaBtn);
+    mainContainer.appendChild(finestraVittoria);
+    overlay.classList.add('modal-overlay');*/
+
+
+}
 
 
