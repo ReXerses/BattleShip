@@ -1,4 +1,5 @@
 import scheletroPagina from './scheletroPagina';
+import { Player } from './Player';
 
 scheletroPagina();
 
@@ -8,10 +9,35 @@ const CLASSE_VALIDA = 'valid';
 const CLASSE_INVALIDA = 'invalid';
 const MAX_COLONNE = 10;
 const infoCollocamento = document.querySelector('.info');
+const ruotaBtn = document.getElementById('rotate');
 
 
-let turnoUmano = true;
+let turnoUmano = true; // Per evitare i doppi click
 let statoRuotaNave = 'orizzontale';
+
+let giocatore1 = Player(1);
+let bot = Player(2);
+
+let infoNave = document.getElementById('dimensioniNave');
+aggiornaInfoNaveDOM ();
+
+bot.autoPosizionamentoNavi();
+makeGridDOM(bot);
+makeGridDOM(giocatore1);
+tavoloBot.style.pointerEvents = 'none'; //disattivo il tavolo del bot
+
+let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
+let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
+
+aggiungiEventoInserisciNaveAdOgniCasella(caselleGriglia); // Aggiunge la possibilità di collocare la nave in quella casella qualora le restrizioni vengano rispettate.
+previewCollacamentoNavi(caselleGriglia); // Per visualizzare una preview della nave nella griglia e se la sua eventuale posizione sia valida o meno.
+gestioneAttaccoCaselleBot(caselleGrigliaBot); // Aggiunge l'evento attacco alle caselle della griglia del Bot.
+
+function aggiornaInfoNaveDOM () {
+    if (giocatore1.naviDisponibili[0]) {
+        infoNave.textContent = `Collocare la nave di dimensioni: ${giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1].length}`;
+    }
+}
 
 function aggiornaTabella (casella, i, j , giocatore) {
 
@@ -69,176 +95,6 @@ function makeGridDOM(giocatore) {
     }
 }
 
-const Ship = (lunghezza) => {
-
-    return {
-        length : lunghezza,
-        receivedHit : 0,
-        isSunked : false,
-        hit () {
-            return this.receivedHit += 1;
-        },
-        isSunk () {
-            if((this.length === this.receivedHit)) {
-                return this.isSunked = true;
-            }else {
-                return this.isSunked = false;
-            }
-        },
-    };
-};
-
-function inizializzaGriglia (griglia=[], dimensioneGriglia=10) {
-    for (let i = 0; i < dimensioneGriglia; i++) {
-        griglia[i] = [];
-        for (let j = 0; j < dimensioneGriglia; j++) {
-            griglia[i][j] = {
-                status: 'empty', // Stato iniziale della casella (empty, ship, hit, miss, etc.)
-                hipPart: null // Parte della nave presente nella casella (null se la casella è vuota o contiene una nave non colpita)
-            };
-        }
-    }
-    return griglia;
-}
-
-const Gameboard =  () => {
-
-    return {
-        dimensioneGriglia : 10,
-        griglia :  inizializzaGriglia() , // si puo espandere la griglia se necessario
-        pezziDiNavi : 0,
-        // creazione della griglia di gioco
-
-        posizionamentoGrigliaValido (ship, riga, colonna,  orientation) {
-            
-            if (orientation === 'orizzontale') {
-                if ((colonna + ship.length-1 > 9)) {
-                    return false;
-                } else {
-                    return true;
-                }
-            } else {
-                if ((riga + ship.length-1 > 9)) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        },
-
-        sovrapposizioneNaviValido (ship, riga, colonna,  orientation) {
-            if (orientation === 'orizzontale') {
-                for(let i = colonna; i < colonna + ship.length; i++) {
-                    if(this.griglia[riga][i].status != 'empty') {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                for(let i = riga; i < riga + ship.length; i++) {
-                    if(this.griglia[i][colonna].status != 'empty') {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        },
-
-        placeShip (ship, riga, colonna,  orientation) {
-            if ((this.posizionamentoGrigliaValido(ship, riga, colonna,  orientation)) && (this.sovrapposizioneNaviValido(ship, riga, colonna,  orientation))) {
-                for (let i = 0; i < ship.length; i++) {
-                    if (orientation === 'orizzontale') {
-                        this.griglia[riga][colonna + i].status = 'ship';
-                        this.griglia[riga][colonna + i].shipPart = ship;
-                        this.pezziDiNavi++;
-                    } else {
-                        this.griglia[riga + i][colonna].status = 'ship';
-                        this.griglia[riga + i][colonna].shipPart = ship;
-                        this.pezziDiNavi++;
-                    }
-                }
-                return true;
-            } else {
-                return false;
-            }
-        },
-
-        areAllShipsSunk() {
-            return this.pezziDiNavi === 0;
-        },
-
-        receiveAttack (riga, colonna) {
-            const cella = this.griglia[riga][colonna];
-            if(cella.status === 'ship') {
-                cella.status = 'hit';
-                cella.shipPart.hit();
-
-                this.pezziDiNavi--;
-                if (cella.shipPart.isSunk()) {
-                    // La nave è completamente affondata
-                    if (this.areAllShipsSunk()) {
-                    // Tutte le navi sono state distrutte,  gestire la vittoria
-                        console.log('Hai distrutto tutte le navi!');
-                    }
-                }
-            } else if (cella.status === 'empty') {
-                cella.status = 'miss';
-            }
-        },
-    };
-};
-
-const Player = (idGiocatore) => {
-
-    return {
-        id : idGiocatore,
-        tabella : Gameboard (),
-        naviDisponibili : [Ship(1), Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)],
-
-        autoPosizionamentoNavi() {
-            if (this.naviDisponibili.length === 0) {
-                return;
-            } else {
-                let nave = this.naviDisponibili.pop(); // Ottieni l'ultima nave senza rimuoverla dall'array
-                let controllo = true;
-        
-                while (controllo) {
-                    let riga = Math.floor(Math.random() * 10);
-                    let colonna = Math.floor(Math.random() * 10);
-                    let opzioni = ['orizzontale', 'verticale'];
-                    let direzione = opzioni[Math.floor(Math.random() * opzioni.length)];
-        
-                    if (this.tabella.placeShip(nave, riga, colonna, direzione)) {
-                        controllo = false;
-                    }
-                }
-        
-                // Chiamata ricorsiva con l'array senza l'ultima nave
-                this.autoPosizionamentoNavi(this.naviDisponibili);
-            }
-        }
-    };
-};
-
-
-let giocatore1 = Player(1);
-let bot = Player(2);
-
-bot.autoPosizionamentoNavi();
-makeGridDOM(bot);
-tavoloBot.style.pointerEvents = 'none'; //disattivo il tavolo del bot
-const ruotaBtn = document.getElementById('rotate');
-
-ruotaBtn.addEventListener('click',  () => {
-    if(statoRuotaNave === 'orizzontale') {
-        statoRuotaNave = 'verticale';
-    } else {
-        statoRuotaNave = 'orizzontale';
-    }
-});
-
-makeGridDOM(giocatore1);
-
 function aggiornaGriglia (giocatore) {
     let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
     caselleGriglia.forEach( casella => {
@@ -250,11 +106,11 @@ function aggiornaGriglia (giocatore) {
     });
 }
 
-let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
-let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
-caselleGriglia.forEach( casella => {
-    casella.addEventListener('click', event =>  aggiungiEventoCasellaInserisciNave(event, casella));
-});
+function aggiungiEventoInserisciNaveAdOgniCasella (caselle) {
+    caselle.forEach( casella => {
+        casella.addEventListener('click', event =>  aggiungiEventoCasellaInserisciNave(event, casella));
+    });
+}
 
 function aggiungiEventoCasellaInserisciNave (event, casella) {
     if(giocatore1.naviDisponibili.length != 0) {
@@ -263,10 +119,10 @@ function aggiungiEventoCasellaInserisciNave (event, casella) {
         let nave = giocatore1.naviDisponibili[giocatore1.naviDisponibili.length-1];
         if((giocatore1.tabella.posizionamentoGrigliaValido(nave, riga, colonna, statoRuotaNave)) &&
           (giocatore1.tabella.sovrapposizioneNaviValido(nave, riga, colonna, statoRuotaNave))) {
-            
             let nave = giocatore1.naviDisponibili.pop();
             giocatore1.tabella.placeShip(nave, riga, colonna, statoRuotaNave);
             aggiornaGriglia(giocatore1);
+            aggiornaInfoNaveDOM();
         }
     }
     if (giocatore1.naviDisponibili.length === 0)  {
@@ -285,7 +141,6 @@ function rimuoviEventoDaTutteLeCaselle() {
     });
 }
 
-
 function rimuoviClassi() {
     let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
     caselleGriglia.forEach(c => {
@@ -293,59 +148,63 @@ function rimuoviClassi() {
     });
 }
 
-caselleGriglia.forEach(casella => {
-    casella.addEventListener('mouseover', () => {
-        rimuoviClassi();
-
-        let nave = giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1];
-        let riga = parseInt(casella.getAttribute('data-row'));
-        let colonna = parseInt(casella.getAttribute('data-col'));
-
-        let tutteValide = true;
-
-        for (let i = 0; i < nave.length; i++) {
-            let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
-            let row = statoRuotaNave === 'verticale' ? riga + i : riga;
-
-            let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-
-            if (!quadrato || quadrato.classList.contains('ship') || (statoRuotaNave === 'verticale' && row >= MAX_COLONNE) || (statoRuotaNave === 'orizzontale' && col >= MAX_COLONNE)) {
-                tutteValide = false;
+function previewCollacamentoNavi (caselle) {
+    caselle.forEach(casella => {
+        casella.addEventListener('mouseover', () => {
+            rimuoviClassi();
+    
+            let nave = giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1];
+            let riga = parseInt(casella.getAttribute('data-row'));
+            let colonna = parseInt(casella.getAttribute('data-col'));
+    
+            let tutteValide = true;
+    
+            for (let i = 0; i < nave.length; i++) {
+                let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
+                let row = statoRuotaNave === 'verticale' ? riga + i : riga;
+    
+                let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    
+                if (!quadrato || quadrato.classList.contains('ship') || (statoRuotaNave === 'verticale' && row >= MAX_COLONNE) || (statoRuotaNave === 'orizzontale' && col >= MAX_COLONNE)) {
+                    tutteValide = false;
+                }
             }
-        }
+    
+            let classeAggiunta = tutteValide ? CLASSE_VALIDA : CLASSE_INVALIDA;
+    
+            for (let i = 0; i < nave.length; i++) {
+                let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
+                let row = statoRuotaNave === 'verticale' ? riga + i : riga;
+    
+                let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
 
-        let classeAggiunta = tutteValide ? CLASSE_VALIDA : CLASSE_INVALIDA;
-
-        for (let i = 0; i < nave.length; i++) {
-            let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
-            let row = statoRuotaNave === 'verticale' ? riga + i : riga;
-
-            let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-            quadrato.classList.add(classeAggiunta);
-        }
-    });
-});
-// bot table
-caselleGrigliaBot.forEach(casella => {
-    casella.addEventListener('click', () => {
-        let riga = parseInt(casella.getAttribute('data-row'));
-        let colonna = parseInt(casella.getAttribute('data-col'));
-        
-        if(bot.tabella.griglia[riga][colonna].status != 'miss' && bot.tabella.griglia[riga][colonna].status != 'hit') {
-            bot.tabella.receiveAttack(riga, colonna);
-            aggiornaTabella(casella,riga,colonna, bot);
-            turnoUmano= false;
-            if(bot.tabella.areAllShipsSunk()) {
-                gestisciVittoria('HUMAN');
-                //alert('Human wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
-            } else {
-                gestisciClicElementoTavolo();
+                if (quadrato) {
+                    quadrato.classList.add(classeAggiunta);
+                }
             }
-        }
+        });
     });
-});
+}
 
-
+function gestioneAttaccoCaselleBot (caselleBot) {
+    caselleBot.forEach(casella => {
+        casella.addEventListener('click', () => {
+            let riga = parseInt(casella.getAttribute('data-row'));
+            let colonna = parseInt(casella.getAttribute('data-col'));
+            
+            if(bot.tabella.griglia[riga][colonna].status != 'miss' && bot.tabella.griglia[riga][colonna].status != 'hit') {
+                bot.tabella.receiveAttack(riga, colonna);
+                aggiornaTabella(casella,riga,colonna, bot);
+                if(bot.tabella.areAllShipsSunk()) {
+                    gestisciVittoria('HUMAN');
+                } else {
+                    turnoUmano= false;
+                    gestisciClicElementoTavolo();
+                }
+            }
+        });
+    });
+}
 
 function gestisciClicElementoTavolo() {
     if (turnoUmano) {
@@ -366,6 +225,7 @@ function gestisciClicElementoTavolo() {
         }
         if(giocatore1.tabella.areAllShipsSunk()) {
             gestisciVittoria('BOT');
+            turnoUmano = true;
         } else {
             turnoUmano = true;
             gestisciClicElementoTavolo();
@@ -407,66 +267,18 @@ function gestisciVittoria (stringaVincitore) {
         let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
         let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
 
-        caselleGriglia.forEach( casella => {
-            casella.addEventListener('click', event =>  aggiungiEventoCasellaInserisciNave(event, casella));
-        });
+        aggiungiEventoInserisciNaveAdOgniCasella(caselleGriglia);
+        previewCollacamentoNavi(caselleGriglia);
+        gestioneAttaccoCaselleBot(caselleGrigliaBot);
 
-        caselleGriglia.forEach(casella => {
-            casella.addEventListener('mouseover', () => {
-                rimuoviClassi();
-                let nave = giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1];
-                let riga = parseInt(casella.getAttribute('data-row'));
-                let colonna = parseInt(casella.getAttribute('data-col'));
-        
-                let tutteValide = true;
-        
-                for (let i = 0; i < nave.length; i++) {
-                    let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
-                    let row = statoRuotaNave === 'verticale' ? riga + i : riga;
-                    let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        
-                    if (!quadrato || quadrato.classList.contains('ship') || (statoRuotaNave === 'verticale' && row >= MAX_COLONNE) || (statoRuotaNave === 'orizzontale' && col >= MAX_COLONNE)) {
-                        tutteValide = false;
-                    }
-                }
-        
-                let classeAggiunta = tutteValide ? CLASSE_VALIDA : CLASSE_INVALIDA;
-        
-                for (let i = 0; i < nave.length; i++) {
-                    let col = statoRuotaNave === 'orizzontale' ? colonna + i : colonna;
-                    let row = statoRuotaNave === 'verticale' ? riga + i : riga;
-        
-                    let quadrato = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-                    quadrato.classList.add(classeAggiunta);
-                }
-            });
-        });
-        // bot table
-        caselleGrigliaBot.forEach(casella => {
-            casella.addEventListener('click', () => {
-                let riga = parseInt(casella.getAttribute('data-row'));
-                let colonna = parseInt(casella.getAttribute('data-col'));
-                
-                if(bot.tabella.griglia[riga][colonna].status != 'miss' && bot.tabella.griglia[riga][colonna].status != 'hit') {
-                    bot.tabella.receiveAttack(riga, colonna);
-                    aggiornaTabella(casella,riga,colonna, bot);
-                    turnoUmano= false;
-                    if(bot.tabella.areAllShipsSunk()) {
-                        gestisciVittoria('HUMAN');
-                        //alert('Human wins the game'); //fa comparire una finistra modale annuncia il vincitore e fai scegliere se ricominciare la partita.
-                    } else {
-                        gestisciClicElementoTavolo();
-                    }
-                }
-            });
-        });
     });
-
-    /*finestraVittoria.appendChild(ricominciaBtn);
-    mainContainer.appendChild(finestraVittoria);
-    overlay.classList.add('modal-overlay');*/
-
 
 }
 
-
+ruotaBtn.addEventListener('click',  () => {
+    if(statoRuotaNave === 'orizzontale') {
+        statoRuotaNave = 'verticale';
+    } else {
+        statoRuotaNave = 'orizzontale';
+    }
+});

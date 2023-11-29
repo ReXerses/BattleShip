@@ -87,21 +87,24 @@ const scheletroPagina = (() => {
     }
 
     .ship {
-        background-color: red;
+        background-image: url(../src/media/battleShip.png);
+        background-size: 100% 100%;
     }
 
     .hit {
-        background-color : grey;
+        background-image: url(../src/media/hit.png);
+        background-size: 100% 100%;
     }
 
     .miss {
-        background-color : purple;
+        background-image: url(../src/media/miss.png);
+        background-size: 100% 100%;
     }
     .valid {
         background-color : green;
     }
     .invalid {
-        background-color : yellow;
+        background-color : red;
     }
     .info {
         display: flex;
@@ -143,7 +146,7 @@ const scheletroPagina = (() => {
         <div class='parteSinistra'>
             <div class='tabella' id='human'></div>
             <div class='info'>
-                <span id='dimensioniNave'>La nave è lunga 5.</span>
+                <span id='dimensioniNave'></span>
                 <button id='rotate'>Ruota la nave</button>
             </div>        
         </div>
