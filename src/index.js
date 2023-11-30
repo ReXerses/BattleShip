@@ -35,7 +35,7 @@ gestioneAttaccoCaselleBot(caselleGrigliaBot); // Aggiunge l'evento attacco alle 
 
 function aggiornaInfoNaveDOM () {
     if (giocatore1.naviDisponibili[0]) {
-        infoNave.textContent = `Collocare la nave di dimensioni: ${giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1].length}`;
+        infoNave.textContent = `Nave\u00A0\u00A0 di\u00A0\u00A0 dimensione:\u00A0\u00A0 ${giocatore1.naviDisponibili[giocatore1.naviDisponibili.length - 1].length}`;
     }
 }
 
@@ -241,7 +241,7 @@ function gestisciVittoria (stringaVincitore) {
     finestraVittoria.classList.add('modale');
     
     const nomeVincitore = document.createElement('span');
-    nomeVincitore.textContent = `${stringaVincitore} WINS!`;
+    nomeVincitore.textContent = `${stringaVincitore}\u00A0\u00A0 WINS!`;
     finestraVittoria.appendChild(nomeVincitore);
 
     const ricominciaBtn = document.createElement('button');
@@ -262,15 +262,14 @@ function gestisciVittoria (stringaVincitore) {
         makeGridDOM(bot);
         tavoloBot.style.pointerEvents = 'none'; //disattivo il tavolo del bot
         infoCollocamento.style.display = 'flex';
-        //gestire il restart del game
         makeGridDOM(giocatore1);
         let caselleGriglia = document.querySelectorAll('.casellaGiocatore');
         let caselleGrigliaBot = document.querySelectorAll('.casellaBot');
 
+        aggiornaInfoNaveDOM ();
         aggiungiEventoInserisciNaveAdOgniCasella(caselleGriglia);
         previewCollacamentoNavi(caselleGriglia);
         gestioneAttaccoCaselleBot(caselleGrigliaBot);
-
     });
 
 }

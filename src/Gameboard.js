@@ -82,15 +82,8 @@ export const Gameboard =  () => {
             if(cella.status === 'ship') {
                 cella.status = 'hit';
                 cella.shipPart.hit();
-
                 this.pezziDiNavi--;
-                if (cella.shipPart.isSunk()) {
-                    // La nave è completamente affondata
-                    if (this.areAllShipsSunk()) {
-                    // Tutte le navi sono state distrutte,  gestire la vittoria
-                        console.log('Hai distrutto tutte le navi!');
-                    }
-                }
+                
             } else if (cella.status === 'empty') {
                 cella.status = 'miss';
             }

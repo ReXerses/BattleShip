@@ -3,6 +3,12 @@ const scheletroPagina = (() => {
 
     body.innerHTML = `<style>
     
+    @font-face {
+    font-family: 'arcadeFont'; 
+    src: url('../src/media/arcade.TTF') format('truetype');
+    font-weight: normale; 
+    font-style: normale; 
+    }
 
     body {
         margin: 0px;
@@ -12,6 +18,7 @@ const scheletroPagina = (() => {
         max-height: 100%;
         justify-content: space-between;
         font-size: 2rem;
+        font-family: 'arcadeFont', sans-serif;
     }
     
     .footer {
@@ -39,17 +46,20 @@ const scheletroPagina = (() => {
     }
     
     .titolo {
-        background-color: yellow;
+        background-color: #1461a1;
+        color: white;
+        text-align: center;
+        font-size: 4rem;
     }
 
     .mainContainer {
         display : flex;
         flex: 1;
         flex-wrap: wrap;
+        background: #f6f6f794;
     }
 
     .parteSinistra {
-        background-color: blue;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -60,7 +70,6 @@ const scheletroPagina = (() => {
     }
 
     .parteDestra {
-        background-color: pink;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -74,11 +83,14 @@ const scheletroPagina = (() => {
         background-color : white;
         display: flex;
         flex-direction: column;
+        border: black 4px outset;
     }
 
     .col {
         border-style: groove;
         flex: 1;
+        border-style: outset;
+        border-color: azure;
     }
 
     .row {
@@ -94,11 +106,15 @@ const scheletroPagina = (() => {
     .hit {
         background-image: url(../src/media/hit.png);
         background-size: 100% 100%;
+        border-style: inset;
+        background-color: beige;
     }
 
     .miss {
         background-image: url(../src/media/miss.png);
         background-size: 100% 100%;
+        border-style: inset;
+        background-color: #0000ff17;
     }
     .valid {
         background-color : green;
@@ -110,22 +126,28 @@ const scheletroPagina = (() => {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        align-items: center;
+        background-color: #8080804d;
+        padding: 1rem;
+        border-radius: 32px;
     }
     .modale {
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
         transform : translate(-50%, -50%);
         height: 200px;
         width: 200px;
-        padding: 1rem;
-        background: red;
+        padding: 2rem;
         z-index: 1001;
         display: flex;
         flex-direction: column;
         text-align: center;
         justify-content: space-around;
         align-items: center;
+        background-color: #414344b8;
+        color: white;
+        border-radius: 32px;
     }
 
     .modal-overlay {
@@ -138,6 +160,23 @@ const scheletroPagina = (() => {
         z-index: 1000;
     }
 
+    button {
+        padding: 1rem;
+        border-radius: 16px;
+        border: 1px solid black;
+        font-family: 'arcadeFont';
+        font-size: 20px;
+        background-color : white;
+        color: black;
+        transition: background-color 0.5s ease-in 0.15s;
+        
+    }
+
+    button:hover {
+        background-color : black;
+        color: white;
+    }
+
     </style>
 
     <div class='titolo'>Battle Ship</div>
@@ -147,7 +186,7 @@ const scheletroPagina = (() => {
             <div class='tabella' id='human'></div>
             <div class='info'>
                 <span id='dimensioniNave'></span>
-                <button id='rotate'>Ruota la nave</button>
+                <button id='rotate'>Ruota</button>
             </div>        
         </div>
         <div class='parteDestra'>
